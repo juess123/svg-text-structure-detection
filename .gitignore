@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+torch_env/
+data/
+models/*.pth
+models/*.pkl
+
+input.svg
+output.svg
