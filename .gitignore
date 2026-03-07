@@ -11,3 +11,6 @@ __pycache__/
 
 # virtual environment
 torch_env/
+
+#vscode
+.vscode
