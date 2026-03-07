@@ -1,10 +1,13 @@
-__pycache__/
-*.pyc
-
-torch_env/
+# datasets
 data/
+
+# model weights
 models/*.pth
 models/*.pkl
 
-input.svg
-output.svg
+# python cache
+__pycache__/
+*.pyc
+
+# virtual environment
+torch_env/
