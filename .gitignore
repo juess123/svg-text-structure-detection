@@ -13,4 +13,4 @@ __pycache__/
 torch_env/
 
 #vscode
-.vscode
+.vscode/
