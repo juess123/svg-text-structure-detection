@@ -10,9 +10,11 @@ def build_raw_dataset(svg_folder, output_path, label="text"):
             continue
 
         svg_path = os.path.join(svg_folder, filename)
-        print(f"Processing SVG: {filename}")
 
         records = extract_paths_from_svg(svg_path, label=label)
+
+        print(f"Processing SVG: {filename} | paths found: {len(records)}")
+
         all_data.extend(records)
 
     print(f"Total paths collected: {len(all_data)}")
