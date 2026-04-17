@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import json
 import matplotlib.pyplot as plt
-from models.text_energy_model import TextEnergyModel
+from models.text_classifier_model import TextEnergyModel
 from utils.feature_loader import load_features
 from utils.scaler import StandardScaler
 

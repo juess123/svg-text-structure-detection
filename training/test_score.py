@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import json
-from models.text_energy_model import TextEnergyModel
+from models.text_classifier_model import TextEnergyModel
 from utils.feature_loader import FEATURE_ORDER
 from utils.scaler import StandardScaler
 from utils.feature_loader import load_features

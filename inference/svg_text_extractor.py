@@ -1,6 +1,5 @@
 import xml.etree.ElementTree as ET
 
-
 def extract_svg_paths(svg_file):
 
     tree = ET.parse(svg_file)
@@ -13,8 +12,12 @@ def extract_svg_paths(svg_file):
         if elem.tag.endswith("path"):
 
             d = elem.attrib.get("d")
+            elem_id = elem.attrib.get("id")
 
             if d:
-                paths.append(d)
+                paths.append({
+                    "id": elem_id,
+                    "d": d
+                })
 
     return paths

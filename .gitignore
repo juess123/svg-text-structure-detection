@@ -14,3 +14,9 @@ torch_env/
 
 #vscode
 .vscode/
+
+#source
+source*
+
+#dxf
+*.dxf

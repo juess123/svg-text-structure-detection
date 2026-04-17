@@ -253,17 +253,157 @@ def compute_turning_density(points, angle_threshold=np.pi/6):
 
     return big_turns / (total_length + 1e-6)
 
-def compute_small_segment_ratio(points, length_threshold=5.0):
+def compute_small_segment_ratio(points, ratio_threshold=0.02):
+    """
+    小段比例：
+    段长 < 总长度 * ratio_threshold 的，算作小段
+    这样比固定阈值更稳，不怕整体缩放。
+    """
     if len(points) < 2:
         return 0.0
 
-    points = np.array(points)
+    points = np.array(points, dtype=np.float32)
     vecs = points[1:] - points[:-1]
     seg_lengths = np.linalg.norm(vecs, axis=1)
 
     if len(seg_lengths) == 0:
         return 0.0
 
-    small_count = np.sum(seg_lengths < length_threshold)
+    total_length = np.sum(seg_lengths)
+    if total_length < 1e-9:
+        return 0.0
 
-    return small_count / len(seg_lengths)
+    threshold = total_length * ratio_threshold
+    small_count = np.sum(seg_lengths < threshold)
+
+    return float(small_count / len(seg_lengths))
+
+
+
+
+
+
+
+def compute_sharp_turn_count(points, angle_threshold=np.deg2rad(60)):
+    """
+    统计尖锐转角数量。
+    默认把转角 > 60° 认为是 sharp turn。
+
+    返回：
+        int
+    """
+    if len(points) < 3:
+        return 0
+
+    points = np.array(points, dtype=np.float32)
+
+    vecs = points[1:] - points[:-1]
+    lengths = np.linalg.norm(vecs, axis=1)
+
+    # 去掉零长度段
+    valid = lengths > 1e-6
+    vecs = vecs[valid]
+
+    if len(vecs) < 2:
+        return 0
+
+    angles = np.arctan2(vecs[:, 1], vecs[:, 0])
+    angle_diff = np.abs(np.diff(angles))
+
+    # wrap 到 [0, pi]
+    angle_diff = np.minimum(angle_diff, 2 * np.pi - angle_diff)
+
+    sharp_count = np.sum(angle_diff > angle_threshold)
+    return int(sharp_count)
+
+
+def compute_closed_subpath_ratio(commands):
+    """
+    统计闭合子路径占比。
+    一个 subpath 中如果出现 Z/z，就认为该 subpath 是闭合的。
+
+    返回：
+        closed_subpaths / total_subpaths
+    """
+    if not commands:
+        return 0.0
+
+    total_subpaths = 0
+    closed_subpaths = 0
+
+    in_subpath = False
+    current_closed = False
+
+    for cmd, _ in commands:
+        cmd_lower = cmd.lower()
+
+        if cmd_lower == "m":
+            # 遇到新的 subpath，先结算上一个
+            if in_subpath:
+                total_subpaths += 1
+                if current_closed:
+                    closed_subpaths += 1
+
+            in_subpath = True
+            current_closed = False
+
+        elif cmd_lower == "z":
+            if in_subpath:
+                current_closed = True
+
+    # 结算最后一个 subpath
+    if in_subpath:
+        total_subpaths += 1
+        if current_closed:
+            closed_subpaths += 1
+
+    if total_subpaths == 0:
+        return 0.0
+
+    return float(closed_subpaths / total_subpaths)
+
+
+def compute_command_type_ratios(commands):
+    """
+    统计不同命令类型占比。
+
+    返回：
+        line_ratio, curve_ratio, move_ratio, close_ratio
+
+    约定：
+    - line: L/H/V
+    - curve: C/S/Q/T/A
+    - move: M
+    - close: Z
+    """
+    if not commands:
+        return 0.0, 0.0, 0.0, 0.0
+
+    total = len(commands)
+
+    line_cmds = {"l", "h", "v"}
+    curve_cmds = {"c", "s", "q", "t", "a"}
+
+    line_count = 0
+    curve_count = 0
+    move_count = 0
+    close_count = 0
+
+    for cmd, _ in commands:
+        cmd_lower = cmd.lower()
+
+        if cmd_lower in line_cmds:
+            line_count += 1
+        elif cmd_lower in curve_cmds:
+            curve_count += 1
+        elif cmd_lower == "m":
+            move_count += 1
+        elif cmd_lower == "z":
+            close_count += 1
+
+    return (
+        float(line_count / total),
+        float(curve_count / total),
+        float(move_count / total),
+        float(close_count / total),
+    )

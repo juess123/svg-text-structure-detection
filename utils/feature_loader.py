@@ -11,6 +11,17 @@ FEATURE_ORDER = [
     "segment_length_std",
     "direction_variance",
     "curvature_std",
+
+    "log_aspect_ratio",
+    "length_per_bbox_area",
+    "compactness2",
+    "sharp_turn_density",
+    "subpath_count",
+    "closed_subpath_ratio",
+    "line_ratio",
+    "curve_ratio",
+    "move_ratio",
+    "close_ratio",
 ]
 
 def load_features(json_path):
@@ -18,8 +29,15 @@ def load_features(json_path):
         data = json.load(f)
 
     X = []
-    for item in data:
+    for idx, item in enumerate(data):
         features = item["features"]
+
+        missing = [k for k in FEATURE_ORDER if k not in features]
+        if missing:
+            raise KeyError(
+                f"Sample idx={idx} missing feature keys: {missing}"
+            )
+
         vec = [features[k] for k in FEATURE_ORDER]
         X.append(vec)
 
