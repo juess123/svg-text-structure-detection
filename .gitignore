@@ -1,6 +1,6 @@
 # datasets
 data/
-
+datasets/
 # model weights
 models/*.pth
 models/*.pkl
